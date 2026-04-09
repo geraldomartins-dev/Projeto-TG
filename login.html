@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Login — Auto+Assis</title>
+  <style>
+    :root{
+      --bg:#0a0a0a;
+      --panel:#0f0f0f;
+      --accent:#ff6a00;
+      --white:#ffffff;
+      --muted:#cccccc;
+      --success:#22c55e;
+      --danger:#ff4d4d;
+      --radius:14px;
+      --shadow:0 8px 30px rgba(0,0,0,0.6);
+      font-family: Inter, system-ui, sans-serif;
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;background:var(--bg);color:var(--white);display:flex;align-items:center;justify-content:center;padding:32px;}
+
+    .card{
+      width:100%;
+      max-width:920px;
+      display:grid;
+      grid-template-columns:1fr 420px;
+      gap:28px;
+      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+
+    .panel{
+      padding:36px;
+      background:linear-gradient(135deg, rgba(255,106,0,0.07) 0%, transparent 50%), radial-gradient(800px 400px at 10% 10%, rgba(255,106,0,0.06), transparent 20%);
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      gap:18px;
+    }
+
+    .logo{
+      display:flex;align-items:center;gap:12px;font-weight:700;
+    }
+    .logo .mark{
+      width:56px;height:56px;border-radius:10px;
+      background:linear-gradient(135deg,var(--accent), #ffa257);
+      display:flex;align-items:center;justify-content:center;
+      color:var(--bg);font-weight:800;font-size:18px;
+      box-shadow:0 10px 30px rgba(255,106,0,0.12) inset;
+    }
+    .logo h1{margin:0;font-size:20px;color:var(--white)}
+    .logo p{margin:0;color:var(--muted);font-size:13px}
+
+    .promo{margin-top:12px;color:var(--muted);font-size:14px;line-height:1.4;}
+    .meta{font-size:12px;color:var(--muted);margin-top:12px;}
+
+    .form-wrap{padding:36px 40px;background:linear-gradient(180deg, rgba(10,10,10,0.8), rgba(15,15,15,0.9));display:flex;flex-direction:column;justify-content:center;gap:18px;}
+    h2{margin:0 0 6px 0;font-size:20px}
+    p.lead{margin:0;color:var(--muted);font-size:13px}
+    form{display:flex;flex-direction:column;gap:12px;margin-top:8px}
+    label{font-size:13px;color:var(--muted);margin-bottom:6px;display:block}
+    input[type=email],input[type=password],input[type=text]{width:100%;padding:12px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:var(--white);font-size:15px;outline:none;transition:box-shadow .18s,border-color .18s;}
+    input:focus{border-color:rgba(255,106,0,0.9);box-shadow:0 6px 18px rgba(255,106,0,0.08);}
+    .pwd-field{position:relative}
+    .toggle-pwd{position:absolute;right:10px;top:8px;background:none;border:none;color:var(--muted);padding:8px;border-radius:8px;cursor:pointer}
+    .row{display:flex;gap:12px;align-items:center;justify-content:space-between}
+    button[type=submit]{margin-top:8px;padding:12px 14px;border-radius:10px;border:0;background:linear-gradient(90deg,var(--accent),#ff8a3d);color:var(--white);font-weight:600;cursor:pointer;font-size:15px;box-shadow:0 8px 18px rgba(255,106,0,0.14);}
+    button[type=submit]:active{transform:translateY(1px)}
+    .links{display:flex;justify-content:space-between;align-items:center;font-size:13px;margin-top:6px}
+    a{color:var(--accent);text-decoration:none}
+    a:hover{text-decoration:underline}
+    .status{font-size:13px;padding:10px;border-radius:10px}
+    .error{background:rgba(255,77,77,0.08);color:var(--danger);border:1px solid rgba(255,77,77,0.1)}
+    .ok{background:rgba(34,197,94,0.07);color:var(--success);border:1px solid rgba(34,197,94,0.08)}
+    footer{padding:14px 18px;text-align:center;color:var(--muted);font-size:13px}
+    @media(max-width:880px){.card{grid-template-columns:1fr;}.panel{order:2;padding:22px}.form-wrap{order:1;padding:28px}}
+  </style>
+</head>
+<body>
+  <main class="card">
+    <section class="panel">
+      <div class="logo">
+        <span class="mark">A+</span>
+        <div>
+          <h1>Auto+Assis</h1>
+          <p>Oficina & Serviços</p>
+        </div>
+      </div>
+      <p class="promo">Gerencie seus atendimentos e ordens de serviço com praticidade e segurança.</p>
+      <div class="meta">
+          **Cliente:** Use a senha que definiu no cadastro. Se não cadastrou, clique em "Cadastre-se".
+          **Gerente:** Use E-mail: `admin@autoassis.com`, Senha: `admin123`, Código: `001`.
+      </div>
+    </section>
+
+    <section class="form-wrap">
+      <div>
+        <h2>Entrar na conta</h2>
+        <p class="lead">Acesse sua conta Auto+Assis.</p>
+      </div>
+
+      <form id="loginForm" novalidate>
+        <label>Tipo de acesso:</label>
+        <div style="display:flex;gap:12px;margin-bottom:12px;">
+          <label><input type="radio" name="userType" value="cliente" checked> Cliente</label>
+          <label><input type="radio" name="userType" value="gerente"> Mecânico/Gerente</label>
+        </div>
+
+        <div>
+          <label for="email">E-mail</label>
+          <input id="email" name="email" type="email" placeholder="seu@exemplo.com" required>
+        </div>
+        <div>
+          <label for="password">Senha</label>
+          <div class="pwd-field">
+            <input id="password" name="password" type="password" placeholder="••••••••" minlength="6" required>
+            <button type="button" class="toggle-pwd" aria-label="Mostrar senha">👁️</button>
+          </div>
+        </div>
+
+        <div id="codeField" style="display:none;">
+          <label for="accessCode">Código de Acesso</label>
+          <input id="accessCode" type="text" placeholder="Digite o código">
+        </div>
+
+        <div class="row">
+          <label class="remember"><input id="remember" type="checkbox"> Lembrar-me</label>
+          <a href="recuperar.html">Esqueceu a senha?</a>
+        </div>
+
+        <div id="status" class="status" style="display:none"></div>
+        <button type="submit" id="submitBtn">Entrar</button>
+
+        <div class="links">
+          <span>Não tem conta? <a href="cadastro.html">Cadastre-se</a></span>
+          <span><a href="#">Ajuda</a></span>
+        </div>
+      </form>
+
+      <footer>&copy; <span id="year"></span> Auto+Assis — Todos os direitos reservados</footer>
+    </section>
+  </main>
+
+  <script>
+    function getUsuariosCadastrados() {
+        const users = localStorage.getItem('usuariosCadastrados');
+        const defaultUsers = {
+            'admin@autoassis.com': { name: 'Pedro', password: 'admin123', isGerente: true }
+        };
+        
+        let parsedUsers = users ? JSON.parse(users) : {};
+        
+        if (!parsedUsers.hasOwnProperty('admin@autoassis.com')) {
+             parsedUsers = { ...parsedUsers, ...defaultUsers };
+        }
+        
+        return parsedUsers;
+    }
+
+    const form=document.getElementById('loginForm');
+    const emailEl=document.getElementById('email');
+    const pwdEl=document.getElementById('password');
+    const rememberEl=document.getElementById('remember');
+    const statusEl=document.getElementById('status');
+    const toggleBtn=document.querySelector('.toggle-pwd');
+    const codeField=document.getElementById('codeField');
+    const accessCode=document.getElementById('accessCode');
+    const radios=document.getElementsByName('userType');
+    document.getElementById('year').textContent=new Date().getFullYear();
+
+    toggleBtn.addEventListener('click',()=>{
+      const show=pwdEl.type==='text';
+      pwdEl.type=show?'password':'text';
+      toggleBtn.textContent=show?'👁️':'🙈';
+    });
+
+    radios.forEach(radio=>{
+      radio.addEventListener('change',()=>{
+        if(radio.value==='gerente' && radio.checked){
+          codeField.style.display='block';
+        } else {
+          codeField.style.display='none';
+          accessCode.value='';
+        }
+      });
+    });
+
+    function showStatus(msg,type){
+      statusEl.style.display='block';
+      statusEl.textContent=msg;
+      statusEl.className='status '+(type==='error'?'error':'ok');
+    }
+
+    function clearStatus(){
+      statusEl.style.display='none';
+      statusEl.textContent='';
+      statusEl.className='status';
+    }
+
+    form.addEventListener('submit',(e)=>{
+      e.preventDefault();
+      clearStatus();
+
+      const email=emailEl.value.trim();
+      const pwd=pwdEl.value;
+      const userType=document.querySelector('input[name="userType"]:checked').value;
+      const code=accessCode.value.trim();
+
+      if(!email){showStatus('Informe o e-mail.','error');return;}
+      if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){showStatus('E-mail inválido.','error');return;}
+      if(pwd.length<6){showStatus('A senha deve ter pelo menos 6 caracteres.','error');return;}
+      
+      const usuarios = getUsuariosCadastrados();
+
+      // --- Lógica de Login do Cliente ---
+      if(userType==='cliente'){
+        
+        const userData = usuarios[email];
+        
+        if (!userData) {
+            showStatus('E-mail não cadastrado. Por favor, cadastre-se.','error');
+            return;
+        }
+
+        if (userData.password !== pwd) {
+             showStatus('Senha incorreta.','error');
+             return;
+        }
+
+        // SALVA NA GAVETA DO CLIENTE
+        localStorage.setItem('nomeClienteLogado', userData.name);
+        localStorage.setItem('emailClienteLogado', email); 
+        
+        showStatus('Login de cliente bem-sucedido! Redirecionando…','ok');
+        setTimeout(()=>{window.location.href='cliente.html';},1000);
+        return;
+      }
+
+      // --- Lógica de Login do Gerente ---
+      if(userType==='gerente'){
+        const ADMIN_EMAIL = 'admin@autoassis.com';
+        const ADMIN_CODE = '001';
+        
+        const adminData = usuarios[ADMIN_EMAIL]; 
+        
+        if (email === ADMIN_EMAIL && pwd === adminData.password && code === ADMIN_CODE){
+          // SALVA NA GAVETA DO GERENTE
+          localStorage.setItem('nomeGerenteLogado', adminData.name); 
+          localStorage.setItem('emailGerenteLogado', ADMIN_EMAIL); 
+          
+          showStatus('Login de gerente/mecânico bem-sucedido! Redirecionando…','ok');
+          setTimeout(()=>{window.location.href='dashboard.html';},1000);
+        } else {
+          showStatus('Credenciais (E-mail, Senha ou Código) incorretas.','error');
+        }
+      }
+    });
+  </script>
+</body>
+</html>

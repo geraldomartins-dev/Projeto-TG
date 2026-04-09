@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Estoque — Auto+Assis</title>
+  <style>
+    :root{
+      --bg:#0a0a0a;
+      --panel:#0f0f0f;
+      --accent:#ff6a00;
+      --white:#ffffff;
+      --muted:#cccccc;
+      --success:#22c55e;
+      --danger:#ff4d4d;
+      --radius:12px;
+      --shadow:0 8px 30px rgba(0,0,0,0.6);
+      font-family:Inter,system-ui,sans-serif;
+    }
+
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:var(--bg);color:var(--white);font-family:Inter,sans-serif;}
+    a{color:var(--accent);text-decoration:none;}
+    a:hover{text-decoration:underline;}
+    
+	/* Corrige o fundo branco invisível das opções do select */
+    option {
+      background-color: #141414;
+      color: #ffffff;
+    }
+
+    .container{display:flex;height:100vh;}
+    aside{width:260px;background:var(--panel);padding:24px;display:flex;flex-direction:column;gap:18px;}
+    aside .logo{display:flex;align-items:center;gap:12px;font-weight:700;}
+    aside .logo .mark{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#ffa257);display:flex;align-items:center;justify-content:center;color:var(--bg);font-weight:800;}
+    aside nav{flex:1;display:flex;flex-direction:column;gap:12px;}
+    aside nav a{display:block;padding:10px 14px;border-radius:10px;color:var(--white);}
+    aside nav a.active, aside nav a:hover{background:rgba(255,106,0,0.2);}
+    aside .user{margin-top:auto;padding:12px;border-radius:10px;background:rgba(255,255,255,0.05);text-align:center;}
+    aside button{margin-top:12px;padding:10px;border:none;border-radius:10px;background:rgba(255,77,77,0.2);color:var(--danger);cursor:pointer;transition:background 0.2s;}
+    aside button:hover{background:rgba(255,77,77,0.4);}
+
+    main{flex:1;padding:24px;overflow-y:auto;}
+    main h1{font-size:24px;margin-bottom:4px;}
+    main p{color:var(--muted);margin-bottom:18px;}
+    .actions{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
+    .actions input, .actions select{padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:var(--white);}
+    .actions button{padding:10px 14px;border-radius:10px;border:none;background:linear-gradient(90deg,var(--accent),#ff8a3d);color:var(--white);cursor:pointer;transition:opacity 0.2s;}
+    .actions button:hover{opacity:0.8;}
+
+    .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:18px;}
+    .card{background:var(--panel);padding:18px;border-radius:var(--radius);box-shadow:var(--shadow);display:flex;flex-direction:column;gap:6px;}
+    .card h3{margin:0;font-size:16px;display:flex;justify-content:space-between;align-items:center;}
+    .card p{font-size:13px;color:var(--muted);}
+    .quantity{font-weight:600;}
+    .quantity.low{color:var(--danger);}
+    .quantity.ok{color:var(--success);}
+    .card button{margin-top:8px;padding:8px;border-radius:10px;border:none;background:rgba(255,106,0,0.2);color:var(--white);cursor:pointer;transition:background 0.2s;}
+    .card button:hover{background:rgba(255,106,0,0.35);}
+    .card .delete{background:rgba(255,77,77,0.2);margin-top:4px;}
+    .card .delete:hover{background:rgba(255,77,77,0.4);}
+    
+    /* Estado de carregamento */
+    .cards-loading { text-align: center; color: var(--muted); padding: 50px; font-size: 1.1em; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <aside>
+      <div class="logo"><span class="mark">A+</span> Auto+Assis</div>
+      <nav>
+        <a href="dashboard.html">Dashboard</a>
+        <a href="estoque.html" class="active">Estoque</a>
+        <a href="movimentacao.html">Movimentações</a>
+        <a href="servicos.html">Serviços</a>
+        <a href="relatorio.html">Relatórios</a>
+      </nav>
+      <div class="user">
+        <strong id="nomeGerentePerfil">Administrador</strong><br><small style="color:var(--muted)">Gerente</small>
+      </div>
+      <button id="sairBtn">Sair</button>
+    </aside>
+
+    <main>
+      <h1>Estoque de Peças</h1>
+      <p>Gerencie todas as peças da oficina</p>
+      <div class="actions">
+        <input type="text" id="searchInput" placeholder="Buscar por nome ou código...">
+        <select id="categoriaFilter">
+          <option value="todas">Todas as Categorias</option>
+          <option value="Fluidos">Fluidos</option>
+          <option value="Elétrica">Elétrica</option>
+          <option value="Freios">Freios</option>
+          <option value="Filtros">Filtros</option>
+          <option value="Suspensão">Suspensão</option>
+          <option value="Motor">Motor</option>
+          <option value="Outros">Outros</option>
+        </select>
+        <button id="novaPecaBtn">+ Nova Peça</button>
+      </div>
+      
+      <div class="cards" id="pecasContainer">
+          <div class="cards-loading">Carregando estoque...</div>
+      </div>
+    </main>
+  </div>
+
+  <script src="scripts.js"></script>
+  <script>
+    // --- LÓGICA DE PERFIL (Puxa da gaveta do Gerente) ---
+    const nomeLogado = localStorage.getItem('nomeGerenteLogado') || 'Administrador';
+    document.getElementById('nomeGerentePerfil').textContent = nomeLogado;
+
+    // Redireciona para a tela de login e limpa a gaveta do Gerente
+    document.getElementById("sairBtn").addEventListener("click", () => {
+        localStorage.removeItem('nomeGerenteLogado');
+        localStorage.removeItem('emailGerenteLogado');
+        window.location.href = "login.html";
+    });
+
+    // Redireciona para a página de criação de peça
+    document.getElementById("novaPecaBtn").addEventListener("click", () => {
+      // Limpa a variável de edição para garantir que abre no modo CRIAÇÃO
+      localStorage.removeItem('pecaEditandoId'); 
+      window.location.href = "criarpeca.html";
+    });
+
+    // Adiciona listeners para acionar o filtro no scripts.js
+    document.getElementById("searchInput").addEventListener("input", () => {
+        if (typeof window.aplicarFiltrosEstoque === 'function') {
+            window.aplicarFiltrosEstoque();
+        }
+    });
+    
+    document.getElementById("categoriaFilter").addEventListener("change", () => {
+        if (typeof window.aplicarFiltrosEstoque === 'function') {
+            window.aplicarFiltrosEstoque();
+        }
+    });
+
+    // O scripts.js é configurado para chamar automaticamente aplicarFiltrosEstoque() no load da página
+  </script>
+</body>
+</html>
