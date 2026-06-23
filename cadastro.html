@@ -66,10 +66,18 @@
         <p class="lead">Preencha os dados abaixo para se cadastrar.</p>
       </div>
 
-      <form id="signupForm" novalidate>
+     <form id="signupForm" novalidate>
         <div>
           <label for="name">Nome completo</label>
           <input id="name" name="name" type="text" placeholder="Seu nome" required>
+        </div>
+
+        <div>
+          <label for="tipo">Tipo de Conta</label>
+          <select id="tipo" style="width:100%; padding:12px; border-radius:10px; border:1px solid rgba(255,255,255,0.06); background:transparent; color:white; outline:none; margin-bottom:12px;">
+            <option value="cliente" style="background:#0a0a0a">Cliente</option>
+            <option value="gerente" style="background:#0a0a0a">Gerente / Mecânico</option>
+          </select>
         </div>
         <div>
           <label for="email">E-mail</label>
@@ -102,90 +110,81 @@
   </main>
 
   <script>
-    // --- Funções de Simulação de Usuários Cadastrados ---
-    function getUsuariosCadastrados() {
-        const users = localStorage.getItem('usuariosCadastrados');
-        // Inicializa com um usuário Admin/Gerente para testes, se estiver vazio
-        const defaultUsers = {
-            'admin@autoassis.com': { name: 'Pedro', password: 'admin123', isGerente: true }
-        };
-        return users ? JSON.parse(users) : defaultUsers; 
-    }
+    const form = document.getElementById('signupForm');
+    const nameEl = document.getElementById('name');
+    const emailEl = document.getElementById('email');
+    const pwdEl = document.getElementById('password');
+    const confirmEl = document.getElementById('confirm');
+    const statusEl = document.getElementById('status');
+    const toggleBtn = document.querySelector('.toggle-pwd');
+    const submitBtn = document.getElementById('submitBtn');
+    document.getElementById('year').textContent = new Date().getFullYear();
 
-    function setUsuariosCadastrados(users) {
-        localStorage.setItem('usuariosCadastrados', JSON.stringify(users));
-    }
-    // --- Fim das Funções de Simulação ---
-
-    const form=document.getElementById('signupForm');
-    const nameEl=document.getElementById('name');
-    const emailEl=document.getElementById('email');
-    const pwdEl=document.getElementById('password');
-    const confirmEl=document.getElementById('confirm');
-    const statusEl=document.getElementById('status');
-    const toggleBtn=document.querySelector('.toggle-pwd');
-    const submitBtn=document.getElementById('submitBtn');
-    document.getElementById('year').textContent=new Date().getFullYear();
-
-    toggleBtn.addEventListener('click',()=>{
-      const show=pwdEl.type==='text';
-      pwdEl.type=show?'password':'text';
-      confirmEl.type=show?'password':'text';
-      toggleBtn.textContent=show?'👁️':'🙈';
+    toggleBtn.addEventListener('click', () => {
+      const show = pwdEl.type === 'text';
+      pwdEl.type = show ? 'password' : 'text';
+      confirmEl.type = show ? 'password' : 'text';
+      toggleBtn.textContent = show ? '👁️' : '🙈';
     });
 
-    function showStatus(msg,type){
-      statusEl.style.display='block';
-      statusEl.textContent=msg;
-      statusEl.className='status '+(type==='error'?'error':'ok');
+    function showStatus(msg, type) {
+      statusEl.style.display = 'block';
+      statusEl.textContent = msg;
+      statusEl.className = 'status ' + (type === 'error' ? 'error' : 'ok');
     }
-    function clearStatus(){
-      statusEl.style.display='none';
-      statusEl.textContent='';
-      statusEl.className='status';
+    function clearStatus() {
+      statusEl.style.display = 'none';
+      statusEl.textContent = '';
+      statusEl.className = 'status';
     }
 
-    form.addEventListener('submit',(e)=>{
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
       clearStatus();
-      const name=nameEl.value.trim();
-      const email=emailEl.value.trim();
-      const pwd=pwdEl.value;
-      const confirm=confirmEl.value;
+      
+      const name = nameEl.value.trim();
+      const email = emailEl.value.trim();
+      const pwd = pwdEl.value;
+      const confirm = confirmEl.value;
+      // Capturamos a escolha do usuário aqui:
+      const tipoConta = document.getElementById('tipo').value;
 
       // Validações
-      if(!name){showStatus('Informe seu nome completo.','error');return;}
-      if(!email){showStatus('Informe um e-mail.','error');return;}
-      if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){showStatus('E-mail inválido.','error');return;}
-      if(pwd.length<6){showStatus('A senha deve ter pelo menos 6 caracteres.','error');return;}
-      if(pwd!==confirm){showStatus('As senhas não conferem.','error');return;}
+      if (!name) { showStatus('Informe seu nome completo.', 'error'); return; }
+      if (!email) { showStatus('Informe um e-mail.', 'error'); return; }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showStatus('E-mail inválido.', 'error'); return; }
+      if (pwd.length < 6) { showStatus('A senha deve ter pelo menos 6 caracteres.', 'error'); return; }
+      if (pwd !== confirm) { showStatus('As senhas não conferem.', 'error'); return; }
 
-      // Lógica de Cadastro Realista (Simulado)
-      const usuarios = getUsuariosCadastrados();
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Cadastrando...';
 
-      if (usuarios.hasOwnProperty(email)) {
-          showStatus('Este e-mail já está cadastrado. Tente entrar na conta.','error');
-          return;
+      try {
+        // Envia para o Banco de Dados Real via API (agora enviando também a variável 'tipoConta')
+        const resposta = await fetch('http://localhost:3000/api/cadastro', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nome: name, email: email, senha: pwd, tipo: tipoConta }) 
+        });
+
+        const dados = await resposta.json();
+
+        if (resposta.ok) {
+            showStatus('Cadastro realizado com sucesso! Redirecionando para login...', 'ok');
+            setTimeout(() => { window.location.href = 'login.html'; }, 1500);
+        } else {
+            showStatus(dados.erro || 'Erro ao realizar cadastro.', 'error');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Cadastrar';
+        }
+      } catch (erro) {
+        showStatus('Erro de conexão com o servidor.', 'error');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Cadastrar';
       }
-      
-      // Salva o novo usuário com a senha escolhida
-      usuarios[email] = {
-          name: name,
-          password: pwd,
-          isGerente: false // Todos os cadastros são de clientes
-      };
-
-      setUsuariosCadastrados(usuarios);
-      
-      submitBtn.disabled=true;submitBtn.textContent='Cadastrando...';
-      
-      setTimeout(()=>{
-        showStatus('Cadastro realizado com sucesso! Redirecionando para login...','ok');
-        setTimeout(()=>{window.location.href='login.html';},1000);
-      },900);
     });
 
-    [nameEl,emailEl,pwdEl,confirmEl].forEach(el=>el.addEventListener('input',()=>{if(statusEl.style.display==='block')clearStatus();}));
+    [nameEl, emailEl, pwdEl, confirmEl].forEach(el => el.addEventListener('input', () => { if (statusEl.style.display === 'block') clearStatus(); }));
   </script>
 </body>
 </html>

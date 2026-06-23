@@ -103,103 +103,45 @@
       statusEl.className = 'status';
     }
 
-    form.addEventListener('submit', (e) => {
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
       clearStatus();
       const email = emailEl.value.trim();
 
-      // Validação básica
       if (!email) { showStatus('Informe seu e-mail.', 'error'); return; }
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showStatus('E-mail inválido.', 'error'); return; }
 
       submitBtn.disabled = true;
       submitBtn.textContent = 'Enviando e-mail...';
 
-      // Esconde o botão antigo se houver
       const btnAntigo = document.getElementById('magicBtn');
-      if(btnAntigo) btnAntigo.style.display = 'none';
+      if (btnAntigo) btnAntigo.style.display = 'none';
 
-      // Busca no localStorage a senha guardada (ex: gelane2025)
-     const stringUsuarios = localStorage.getItem('usuariosCadastrados');
-      const usuarios = stringUsuarios ? JSON.parse(stringUsuarios) : {
-          'admin@autoassis.com': { password: 'admin123' } // Padrão se estiver vazio
-      };
-
-      if (usuarios[email]) {
-          // Dispara para o servidor Node.js (certifique-se de que o backend também está na versão de apresentação)
-          fetch('http://localhost:3000/api/recuperar-senha', {
+      try {
+          const resposta = await fetch('http://localhost:3000/api/recuperar-senha', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ email: email, senha: usuarios[email].password })
-          })
-          .then(resposta => resposta.json().then(dados => ({ status: resposta.status, body: dados })))
-          .then(resultado => {
-              if (resultado.status === 200) {
-                  showStatus(`Sucesso! Um e-mail com a sua senha foi enviado.`, 'ok');
-                  submitBtn.textContent = 'E-mail Enviado!';
-                  
-                  // --- CRIAÇÃO DO BOTÃO PROFISSIONAL/SÉRIO DE APRESENTAÇÃO ---
-                  let magicBtn = document.getElementById('magicBtn');
-                  if (!magicBtn) {
-                      magicBtn = document.createElement('a');
-                      magicBtn.id = 'magicBtn';
-                      magicBtn.target = '_blank'; 
-                      magicBtn.style.display = 'block';
-                      magicBtn.style.marginTop = '15px';
-                      magicBtn.style.padding = '12px';
-                      magicBtn.style.textAlign = 'center';
-                      
-                      // NOVA ESTÉTICA SÉRIA: Complementar ao tema "Dark"
-                      magicBtn.style.background = 'rgba(255, 106, 0, 0.05)'; // Sutil hint de âmbar
-                      magicBtn.style.border = '2px solid rgba(255, 106, 0, 0.3)'; // Borda sutil na cor de destaque
-                      magicBtn.style.color = '#ff8a3d'; // Texto em cor quente profissional
-                      
-                      magicBtn.style.borderRadius = '8px'; // Cantos ligeiramente menos arredondados
-                      magicBtn.style.textDecoration = 'none';
-                      magicBtn.style.fontSize = '12px'; // Texto menor e mais técnico
-                      magicBtn.style.fontWeight = 'bold';
-                      magicBtn.style.textTransform = 'uppercase'; // Maiúsculo para seriedade
-                      magicBtn.style.letterSpacing = '1px'; // Espaçamento entre letras
-                      magicBtn.style.boxShadow = '0 6px 15px rgba(255, 106, 0, 0.05)'; // Sombra muito leve
-                      magicBtn.style.transition = 'all 0.2s';
-                      
-                      // Texto mais sério e formal
-                      magicBtn.textContent = 'Acessar Caixa de entrada do Cliente';
-                      
-                      // Efeito hover mais profissional
-                      magicBtn.onmouseover = () => {
-                          magicBtn.style.background = 'rgba(255, 106, 0, 0.1)';
-                          magicBtn.style.borderColor = 'rgba(255, 106, 0, 0.5)';
-                          magicBtn.style.transform = 'translateY(-1px)';
-                      };
-                      magicBtn.onmouseout = () => {
-                          magicBtn.style.background = 'rgba(255, 106, 0, 0.05)';
-                          magicBtn.style.borderColor = 'rgba(255, 106, 0, 0.3)';
-                          magicBtn.style.transform = 'translateY(0)';
-                      };
-                      form.appendChild(magicBtn);
-                  }
-                  magicBtn.href = resultado.body.linkApresentacao;
-                  magicBtn.style.display = 'block';
-
-              } else {
-                  throw new Error('Falha no servidor');
-              }
-          })
-          .catch(erro => {
-              showStatus('Erro ao enviar o e-mail. Verifique se o servidor (Node.js) está ligado.', 'error');
-              submitBtn.disabled = false;
-              submitBtn.textContent = 'Tentar Novamente';
+              body: JSON.stringify({ email: email })
           });
+          
+          const dados = await resposta.json();
 
-      } else {
-          showStatus('Erro: E-mail não encontrado no sistema.', 'error');
+          if (resposta.ok) {
+              showStatus('✅ Sucesso! O link de recuperação foi enviado para a sua caixa de entrada.', 'ok');
+              submitBtn.textContent = 'E-mail Enviado!';
+              // (Apagamos todo o código do magicBtn daqui)
+          } else {
+              showStatus(dados.erro || 'Erro ao processar solicitação.', 'error');
+              submitBtn.disabled = false;
+              submitBtn.textContent = 'Enviar link';
+          }
+      } catch (erro) {
+          showStatus('Erro ao enviar o e-mail. Servidor fora do ar.', 'error');
           submitBtn.disabled = false;
-          submitBtn.textContent = 'Enviar link';
+          submitBtn.textContent = 'Tentar Novamente';
       }
     });
 
     emailEl.addEventListener('input', () => { if (statusEl.style.display === 'block') clearStatus(); });
   </script>
-</body>
 </html>

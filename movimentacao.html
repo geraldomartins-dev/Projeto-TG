@@ -35,7 +35,34 @@
         .filter-btn.active-saida { background: var(--danger); color: white; border-color: var(--danger); }
         
         .list-item { background: #111; padding: 15px 20px; border-radius: 8px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #1a1a1a; }
-    </style>
+    
+
+/* Toast profissional */
+#toast {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background: #111;
+    color: #fff;
+    border-left: 5px solid #ff6a00;
+    padding: 14px 18px;
+    border-radius: 10px;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: .3s ease;
+    z-index: 9999;
+    pointer-events: none;
+    min-width: 260px;
+    max-width: 420px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.45);
+    font-size: 14px;
+}
+
+#toast.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+</style>
 </head>
 <body>
     <aside>
@@ -109,9 +136,19 @@
             try {
                 const res = await fetch('http://localhost:3000/api/movimentacoes');
                 todasAsMovimentacoes = await res.json();
-                
-                todasAsMovimentacoes.reverse();
-                renderizarLista('todos');
+
+todasAsMovimentacoes.sort((a, b) => {
+    const dataA = new Date(a.data);
+    const dataB = new Date(b.data);
+
+    if (dataB - dataA !== 0) {
+        return dataB - dataA;
+    }
+
+    return Number(b.id || 0) - Number(a.id || 0);
+});
+
+renderizarLista('todos');
                 
             } catch (e) {
                 console.error("Erro:", e);
@@ -174,7 +211,7 @@
                 container.innerHTML += `
                     <div class="list-item" style="border-left: 4px solid ${cor}">
                         <div>
-                            <div style="color: ${cor}; font-weight: bold; margin-bottom: 5px;">${icone} ${tipoTexto} <span style="color: var(--white); font-weight: normal;">- Peça: ${m.pecaId}</span></div>
+                            <div style="color: ${cor}; font-weight: bold; margin-bottom: 5px;">${icone} ${tipoTexto} <span style="color: var(--white); font-weight: normal;">- Peça: ${m.nome_peca}</span></div>
                             <div style="color: var(--muted); font-size: 0.85em;">${dataFormatada} - ${obs}</div>
                         </div>
                         <div style="font-weight: bold; font-size: 1.1em; color: var(--white);">
@@ -203,5 +240,28 @@
 
         carregarMovimentacoes();
     </script>
+
+  <div id="toast"></div>
+<script>
+
+function mostrarToast(texto) {
+    let toast = document.getElementById('toast');
+
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'toast';
+        document.body.appendChild(toast);
+    }
+
+    toast.textContent = texto;
+    toast.classList.add('show');
+
+    clearTimeout(window.__toastTimer);
+    window.__toastTimer = setTimeout(() => {
+        toast.classList.remove('show');
+    }, 3000);
+}
+
+</script>
 </body>
 </html>

@@ -49,10 +49,10 @@ async function deletarPeca(id) {
     try {
         const res = await fetch(`http://localhost:3000/api/pecas/${id}`, { method: 'DELETE' });
         if (res.ok) {
-            alert("Peça excluída!");
+            (typeof mostrarToast === "function" ? mostrarToast : alert)("Peça excluída!");
             sincronizarEstoqueComBanco();
         }
-    } catch (e) { alert("Erro ao deletar"); }
+    } catch (e) { (typeof mostrarToast === "function" ? mostrarToast : alert)("Erro ao deletar"); }
 }
 
 // -----------------------------------------------------------

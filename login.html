@@ -92,8 +92,7 @@
       </div>
       <p class="promo">Gerencie seus atendimentos e ordens de serviço com praticidade e segurança.</p>
       <div class="meta">
-          **Cliente:** Use a senha que definiu no cadastro. Se não cadastrou, clique em "Cadastre-se".
-          **Gerente:** Use E-mail: `admin@autoassis.com`, Senha: `admin123`, Código: `001`.
+          
       </div>
     </section>
 
@@ -146,117 +145,106 @@
   </main>
 
   <script>
-    function getUsuariosCadastrados() {
-        const users = localStorage.getItem('usuariosCadastrados');
-        const defaultUsers = {
-            'admin@autoassis.com': { name: 'Pedro', password: 'admin123', isGerente: true }
-        };
-        
-        let parsedUsers = users ? JSON.parse(users) : {};
-        
-        if (!parsedUsers.hasOwnProperty('admin@autoassis.com')) {
-             parsedUsers = { ...parsedUsers, ...defaultUsers };
-        }
-        
-        return parsedUsers;
-    }
+    const form = document.getElementById('loginForm');
+    const emailEl = document.getElementById('email');
+    const pwdEl = document.getElementById('password');
+    const statusEl = document.getElementById('status');
+    const toggleBtn = document.querySelector('.toggle-pwd');
+    const codeField = document.getElementById('codeField');
+    const accessCode = document.getElementById('accessCode');
+    const radios = document.getElementsByName('userType');
+    document.getElementById('year').textContent = new Date().getFullYear();
 
-    const form=document.getElementById('loginForm');
-    const emailEl=document.getElementById('email');
-    const pwdEl=document.getElementById('password');
-    const rememberEl=document.getElementById('remember');
-    const statusEl=document.getElementById('status');
-    const toggleBtn=document.querySelector('.toggle-pwd');
-    const codeField=document.getElementById('codeField');
-    const accessCode=document.getElementById('accessCode');
-    const radios=document.getElementsByName('userType');
-    document.getElementById('year').textContent=new Date().getFullYear();
-
-    toggleBtn.addEventListener('click',()=>{
-      const show=pwdEl.type==='text';
-      pwdEl.type=show?'password':'text';
-      toggleBtn.textContent=show?'👁️':'🙈';
+    toggleBtn.addEventListener('click', () => {
+      const show = pwdEl.type === 'text';
+      pwdEl.type = show ? 'password' : 'text';
+      toggleBtn.textContent = show ? '👁️' : '🙈';
     });
 
-    radios.forEach(radio=>{
-      radio.addEventListener('change',()=>{
-        if(radio.value==='gerente' && radio.checked){
-          codeField.style.display='block';
+    radios.forEach(radio => {
+      radio.addEventListener('change', () => {
+        if (radio.value === 'gerente' && radio.checked) {
+          codeField.style.display = 'block';
         } else {
-          codeField.style.display='none';
-          accessCode.value='';
+          codeField.style.display = 'none';
+          accessCode.value = '';
         }
       });
     });
 
-    function showStatus(msg,type){
-      statusEl.style.display='block';
-      statusEl.textContent=msg;
-      statusEl.className='status '+(type==='error'?'error':'ok');
+    function showStatus(msg, type) {
+      statusEl.style.display = 'block';
+      statusEl.textContent = msg;
+      statusEl.className = 'status ' + (type === 'error' ? 'error' : 'ok');
     }
 
-    function clearStatus(){
-      statusEl.style.display='none';
-      statusEl.textContent='';
-      statusEl.className='status';
+    function clearStatus() {
+      statusEl.style.display = 'none';
+      statusEl.textContent = '';
+      statusEl.className = 'status';
     }
 
-    form.addEventListener('submit',(e)=>{
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
       clearStatus();
 
-      const email=emailEl.value.trim();
-      const pwd=pwdEl.value;
-      const userType=document.querySelector('input[name="userType"]:checked').value;
-      const code=accessCode.value.trim();
+      const email = emailEl.value.trim();
+      const pwd = pwdEl.value;
+      const userType = document.querySelector('input[name="userType"]:checked').value;
+      const code = accessCode.value.trim();
 
-      if(!email){showStatus('Informe o e-mail.','error');return;}
-      if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){showStatus('E-mail inválido.','error');return;}
-      if(pwd.length<6){showStatus('A senha deve ter pelo menos 6 caracteres.','error');return;}
-      
-      const usuarios = getUsuariosCadastrados();
+      if (!email) { showStatus('Informe o e-mail.', 'error'); return; }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showStatus('E-mail inválido.', 'error'); return; }
+      if (pwd.length < 6) { showStatus('A senha deve ter pelo menos 6 caracteres.', 'error'); return; }
 
-      // --- Lógica de Login do Cliente ---
-      if(userType==='cliente'){
-        
-        const userData = usuarios[email];
-        
-        if (!userData) {
-            showStatus('E-mail não cadastrado. Por favor, cadastre-se.','error');
-            return;
-        }
-
-        if (userData.password !== pwd) {
-             showStatus('Senha incorreta.','error');
-             return;
-        }
-
-        // SALVA NA GAVETA DO CLIENTE
-        localStorage.setItem('nomeClienteLogado', userData.name);
-        localStorage.setItem('emailClienteLogado', email); 
-        
-        showStatus('Login de cliente bem-sucedido! Redirecionando…','ok');
-        setTimeout(()=>{window.location.href='cliente.html';},1000);
-        return;
+      // Validação rápida de segurança extra para Gerente (Front-end)
+      if (userType === 'gerente' && code !== '001') {
+          showStatus('Código de segurança incorreto.', 'error');
+          return;
       }
 
-      // --- Lógica de Login do Gerente ---
-      if(userType==='gerente'){
-        const ADMIN_EMAIL = 'admin@autoassis.com';
-        const ADMIN_CODE = '001';
-        
-        const adminData = usuarios[ADMIN_EMAIL]; 
-        
-        if (email === ADMIN_EMAIL && pwd === adminData.password && code === ADMIN_CODE){
-          // SALVA NA GAVETA DO GERENTE
-          localStorage.setItem('nomeGerenteLogado', adminData.name); 
-          localStorage.setItem('emailGerenteLogado', ADMIN_EMAIL); 
-          
-          showStatus('Login de gerente/mecânico bem-sucedido! Redirecionando…','ok');
-          setTimeout(()=>{window.location.href='dashboard.html';},1000);
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Autenticando...';
+
+      try {
+        // Envia para o Banco de Dados Real via API
+        const resposta = await fetch('http://localhost:3000/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email, senha: pwd, tipo: userType })
+        });
+
+        const dados = await resposta.json();
+
+       if (resposta.ok) {
+            // MÁGICA DA INTEGRAÇÃO: Salva as chaves universais que o 'novasoli.html' e o resto do sistema procuram!
+            localStorage.setItem('nomeUsuario', dados.usuario.nome);
+            localStorage.setItem('emailUsuario', dados.usuario.email);
+
+            if (userType === 'cliente') {
+                // Mantemos esses originais caso alguma outra página sua dependa deles
+                localStorage.setItem('nomeClienteLogado', dados.usuario.nome);
+                localStorage.setItem('emailClienteLogado', dados.usuario.email); 
+                
+                showStatus('Login bem-sucedido! Redirecionando…', 'ok');
+                setTimeout(() => { window.location.href = 'cliente.html'; }, 1000);
+            } else {
+                // Mantemos esses originais também
+                localStorage.setItem('nomeGerenteLogado', dados.usuario.nome); 
+                localStorage.setItem('emailGerenteLogado', dados.usuario.email); 
+                
+                showStatus('Login de gerente bem-sucedido! Redirecionando…', 'ok');
+                setTimeout(() => { window.location.href = 'dashboard.html'; }, 1000);
+            }
         } else {
-          showStatus('Credenciais (E-mail, Senha ou Código) incorretas.','error');
+            showStatus(dados.erro || 'Credenciais incorretas.', 'error');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Entrar';
         }
+      } catch (erro) {
+        showStatus('Erro de conexão com o servidor.', 'error');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Entrar';
       }
     });
   </script>

@@ -43,7 +43,34 @@
     .header-soli { display: flex; justify-content: space-between; margin-bottom: 10px; }
     .soli-status { font-weight: bold; padding: 4px 10px; border-radius: 4px; font-size: 0.75em; text-transform: uppercase; }
     .empty { text-align: center; padding: 60px; color: var(--muted); }
-  </style>
+  
+
+/* Toast profissional */
+#toast {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background: #111;
+    color: #fff;
+    border-left: 5px solid #ff6a00;
+    padding: 14px 18px;
+    border-radius: 10px;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: .3s ease;
+    z-index: 9999;
+    pointer-events: none;
+    min-width: 260px;
+    max-width: 420px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.45);
+    font-size: 14px;
+}
+
+#toast.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+</style>
 </head>
 <body>
 
@@ -201,14 +228,14 @@
             });
             
             if(resposta.ok) {
-                alert(status === 'Aprovado' ? "Orçamento aceito! A oficina iniciará o serviço." : "Orçamento recusado.");
+                mostrarToast(status === 'Aprovado' ? "Orçamento aceito! A oficina iniciará o serviço." : "Orçamento recusado.");
                 carregarDados(); // Chama a função certa!
             } else {
-                alert("Erro no servidor de banco de dados.");
+                mostrarToast("Erro no servidor de banco de dados.");
             }
         } catch (e) { 
             console.error(e);
-            alert("Erro ao conectar com o servidor! Você está abrindo o arquivo direto da pasta."); 
+            mostrarToast("Erro ao conectar com o servidor! Você está abrindo o arquivo direto da pasta."); 
         }
     }
 
@@ -232,5 +259,28 @@
     document.getElementById('avatarLetra').textContent = nomeCliente[0].toUpperCase();
     carregarDados();
   </script>
+
+  <div id="toast"></div>
+<script>
+
+function mostrarToast(texto) {
+    let toast = document.getElementById('toast');
+
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'toast';
+        document.body.appendChild(toast);
+    }
+
+    toast.textContent = texto;
+    toast.classList.add('show');
+
+    clearTimeout(window.__toastTimer);
+    window.__toastTimer = setTimeout(() => {
+        toast.classList.remove('show');
+    }, 3000);
+}
+
+</script>
 </body>
 </html>
